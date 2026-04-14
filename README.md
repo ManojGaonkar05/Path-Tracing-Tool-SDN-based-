@@ -60,38 +60,12 @@ H1 (10.0.0.1)
 
 ## ⚙️ Working Flow
 
-### 1. Packet Generation
-
-A host sends a packet (e.g., `h1 ping h2`)
-
-### 2. Packet-In Event
-
-Switch sends request to controller when no rule exists
-
-### 3. Controller Decision
-
-Controller determines path based on logic
-
-### 4. Flow Rule Installation
-
-Controller installs rule:
-
-```
-Match: src IP, dst IP
-Action: forward to specific port
-```
-
-### 5. Packet Forwarding
-
-Switch forwards packets using installed rules
-
-### 6. Path Tracing
-
-Path tracer extracts and displays route:
-
-```
-10.0.0.1 → s1 → s2 → 10.0.0.2
-```
+1. Host sends packet (`ping`)
+2. Switch sends **packet_in** to controller
+3. Controller decides path
+4. Flow rules are installed
+5. Packets are forwarded
+6. Path tracer displays route
 
 ---
 
@@ -100,7 +74,7 @@ Path tracer extracts and displays route:
 * Dynamic path tracing
 * Flow rule monitoring
 * Real-time route display
-* Firewall implementation (blocking specific host)
+* Firewall implementation
 * Multiple test scenarios
 * SDN-based intelligent routing
 
@@ -108,21 +82,21 @@ Path tracer extracts and displays route:
 
 ## 🛠️ Setup Instructions
 
-### 1. Install Mininet
+### Install Mininet
 
 ```bash
 sudo apt update
 sudo apt install mininet -y
 ```
 
-### 2. Create Virtual Environment
+### Create Virtual Environment
 
 ```bash
 python3.8 -m venv ryu-env
 source ryu-env/bin/activate
 ```
 
-### 3. Install Ryu Controller
+### Install Ryu
 
 ```bash
 pip install setuptools==58.0.4
@@ -134,58 +108,40 @@ pip install ryu
 
 ## 🧹 Cleanup Before Running (Important)
 
-Before running the project, always execute:
-
 ```bash
 sudo mn -c
 ```
 
-### 💡 Why this is required?
+### 💡 Why?
 
-Mininet creates virtual interfaces (e.g., `s1-eth1`, `s2-eth2`).
-If not cleaned properly, they remain in the system and cause errors like:
+Removes old Mininet interfaces and prevents:
 
 ```
 RTNETLINK answers: File exists
 ```
 
-### ✅ What this command does:
+---
 
-* Removes stale interfaces
-* Clears old topology
-* Resets Open vSwitch
-
-### ⚠️ Best Practice:
-
-Run this before every execution to avoid conflicts.
+# ▶️ How to Run the Project
 
 ---
 
-## ▶️ How to Run the Project
+## 🔹 Scenario 1: Normal Forwarding + Path Tracing
 
----
-
-### 🔹 Scenario 1: Normal Forwarding + Path Tracing
-
-#### Step 1: Cleanup
-
-```bash
-sudo mn -c
-```
-
-#### Step 2: Start Controller
+### 🖥 Terminal 1 → Start Controller
 
 ```bash
 ryu-manager controller.py
 ```
 
-#### Step 3: Run Topology
+---
+
+### 🖥 Terminal 2 → Run Topology
 
 ```bash
+sudo mn -c
 sudo python3 topology.py
 ```
-
-#### Step 4: Test Network
 
 Inside Mininet:
 
@@ -193,7 +149,9 @@ Inside Mininet:
 pingall
 ```
 
-#### Step 5: Run Path Tracer
+---
+
+### 🖥 Terminal 3 → Run Path Tracer
 
 ```bash
 sudo python3 path_tracer.py 10.0.0.1 10.0.0.2
@@ -201,45 +159,43 @@ sudo python3 path_tracer.py 10.0.0.1 10.0.0.2
 
 ---
 
-### 🔹 Scenario 2: Firewall (Blocking H3)
+## 🔹 Scenario 2: Firewall (Blocking H3)
 
-#### Step 1: Cleanup
-
-```bash
-sudo mn -c
-```
-
-#### Step 2: Run Firewall Controller
+### 🖥 Terminal 1 → Firewall Controller
 
 ```bash
 ryu-manager firewall.py
 ```
 
-#### Step 3: Run Topology
+---
+
+### 🖥 Terminal 2 → Run Topology
 
 ```bash
+sudo mn -c
 sudo python3 topology.py
 ```
 
-#### Step 4: Test
+---
+
+### 🖥 Terminal 2 (Mininet CLI) → Test
 
 ```bash
-h1 ping h3   # Expected: FAIL
-h1 ping h2   # Expected: SUCCESS
+h1 ping h3   # FAIL
+h1 ping h2   # SUCCESS
 ```
 
 ---
 
 ## 📊 Expected Output
 
-### Path Tracing Output
+### Path Tracing
 
 ```
-Packet Path:
 10.0.0.1 → s1 → s2 → 10.0.0.2
 ```
 
-### Firewall Output
+### Firewall
 
 ```
 Ping to H3: FAILED
@@ -250,25 +206,18 @@ Ping to H2: SUCCESS
 
 ## 📈 Performance Validation
 
-* Latency using `ping`
-* Throughput using `iperf`
-* Flow rules using:
-
 ```bash
 ovs-ofctl dump-flows s1
 ```
 
 ---
 
-## 🔍 How It Works (Simple Explanation)
+## 🔍 How It Works
 
-* Controller acts as the brain
-* Switches forward packets based on rules
-* Controller installs rules dynamically
-* Path tracer reads flow rules
-* Displays route taken by packets
-
-👉 Similar to Google Maps tracking a route
+* Controller = brain
+* Switch = forwarder
+* Flow rules control traffic
+* Path tracer reads flow tables
 
 ---
 
@@ -289,9 +238,9 @@ ovs-ofctl dump-flows s1
 * What is SDN?
 * What is packet_in?
 * What is a flow rule?
-* Difference between match and action?
-* What happens without controller?
-* How does path tracing work?
+* Match vs Action?
+* Role of controller?
+* How path tracing works?
 
 ---
 
@@ -304,13 +253,11 @@ ovs-ofctl dump-flows s1
 
 ## 🧾 Conclusion
 
-This project demonstrates how SDN enables:
+This project demonstrates:
 
 * Centralized control
 * Dynamic routing
-* Enhanced network visibility
-
-The Path Tracing Tool helps in understanding **how packets actually move inside a network**, making it a powerful learning and debugging tool.
+* Network visibility
 
 ---
 
