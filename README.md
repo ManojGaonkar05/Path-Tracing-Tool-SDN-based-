@@ -2,25 +2,25 @@
 
 ## 📌 Project Overview
 
-The **SDN Path Tracing Tool** is a Software Defined Networking (SDN) based application designed to **identify, track, and display the path taken by packets** across a network.
+The **SDN Path Tracing Tool** is a Software Defined Networking (SDN) application that identifies and displays the path taken by packets in a network.
 
-The project uses:
+It leverages:
 
-* **Mininet** → to simulate network topology
-* **Ryu Controller** → to control network behavior
-* **OpenFlow Protocol** → to install and manage flow rules
+* **Mininet** for network simulation
+* **Ryu Controller** for centralized control
+* **OpenFlow** for flow rule management
 
-This tool provides **visibility into packet forwarding decisions**, which is not possible in traditional networks.
+This project provides **deep visibility into packet forwarding behavior**, which is not available in traditional networks.
 
 ---
 
 ## 🎯 Problem Statement
 
-To design and implement a system that:
+To design a system that:
 
-* Tracks packet flow in an SDN network
-* Identifies forwarding paths dynamically
-* Displays the route taken by packets
+* Tracks packet flow dynamically
+* Identifies forwarding paths
+* Displays routes taken by packets
 * Validates behavior using test scenarios
 
 ---
@@ -28,10 +28,10 @@ To design and implement a system that:
 ## 🧠 Key Concepts Used
 
 * Software Defined Networking (SDN)
-* OpenFlow (match-action flow rules)
-* Packet_in / Packet_out handling
+* OpenFlow (Match–Action rules)
+* Packet_in / Packet_out mechanism
 * Flow table management
-* Network topology simulation
+* Network virtualization using Mininet
 
 ---
 
@@ -39,22 +39,10 @@ To design and implement a system that:
 
 ### Components:
 
-1. **Hosts (H1, H2, H3)**
-
-   * Generate and receive traffic
-
-2. **Switches (S1, S2, S3)**
-
-   * Forward packets based on flow rules
-
-3. **Ryu Controller**
-
-   * Acts as the brain of the network
-   * Installs flow rules dynamically
-
-4. **Path Tracer Module**
-
-   * Tracks and displays packet path
+* **Hosts (H1, H2, H3)** → Generate traffic
+* **Switches (S1, S2, S3)** → Forward packets
+* **Ryu Controller** → Makes decisions and installs flow rules
+* **Path Tracer Module** → Tracks and displays path
 
 ---
 
@@ -72,21 +60,19 @@ H1 (10.0.0.1)
 
 ## ⚙️ Working Flow
 
-### Step 1: Packet Generation
+### 1. Packet Generation
 
 A host sends a packet (e.g., `h1 ping h2`)
 
-### Step 2: Packet-In Event
+### 2. Packet-In Event
 
-* Switch does not have a rule
-* Sends **packet_in** request to controller
+Switch sends request to controller when no rule exists
 
-### Step 3: Controller Decision
+### 3. Controller Decision
 
-* Ryu controller analyzes packet
-* Determines correct forwarding path
+Controller determines path based on logic
 
-### Step 4: Flow Rule Installation
+### 4. Flow Rule Installation
 
 Controller installs rule:
 
@@ -95,15 +81,13 @@ Match: src IP, dst IP
 Action: forward to specific port
 ```
 
-### Step 5: Packet Forwarding
+### 5. Packet Forwarding
 
-* Switch forwards packet using installed rules
-* Future packets follow same path directly
+Switch forwards packets using installed rules
 
-### Step 6: Path Tracing
+### 6. Path Tracing
 
-* Path tracer extracts flow rules
-* Displays full route:
+Path tracer extracts and displays route:
 
 ```
 10.0.0.1 → s1 → s2 → 10.0.0.2
@@ -113,12 +97,12 @@ Action: forward to specific port
 
 ## ✨ Features
 
-* ✅ Dynamic path tracing
-* ✅ Flow rule monitoring
-* ✅ Real-time route display
-* ✅ Firewall functionality (blocking hosts)
-* ✅ Test scenario validation
-* ✅ SDN-based intelligent routing
+* Dynamic path tracing
+* Flow rule monitoring
+* Real-time route display
+* Firewall implementation (blocking specific host)
+* Multiple test scenarios
+* SDN-based intelligent routing
 
 ---
 
@@ -131,14 +115,14 @@ sudo apt update
 sudo apt install mininet -y
 ```
 
-### 2. Setup Python Environment (Recommended)
+### 2. Create Virtual Environment
 
 ```bash
 python3.8 -m venv ryu-env
 source ryu-env/bin/activate
 ```
 
-### 3. Install Ryu
+### 3. Install Ryu Controller
 
 ```bash
 pip install setuptools==58.0.4
@@ -148,31 +132,68 @@ pip install ryu
 
 ---
 
+## 🧹 Cleanup Before Running (Important)
+
+Before running the project, always execute:
+
+```bash
+sudo mn -c
+```
+
+### 💡 Why this is required?
+
+Mininet creates virtual interfaces (e.g., `s1-eth1`, `s2-eth2`).
+If not cleaned properly, they remain in the system and cause errors like:
+
+```
+RTNETLINK answers: File exists
+```
+
+### ✅ What this command does:
+
+* Removes stale interfaces
+* Clears old topology
+* Resets Open vSwitch
+
+### ⚠️ Best Practice:
+
+Run this before every execution to avoid conflicts.
+
+---
+
 ## ▶️ How to Run the Project
 
 ---
 
 ### 🔹 Scenario 1: Normal Forwarding + Path Tracing
 
-#### Terminal 1 (Controller)
+#### Step 1: Cleanup
+
+```bash
+sudo mn -c
+```
+
+#### Step 2: Start Controller
 
 ```bash
 ryu-manager controller.py
 ```
 
-#### Terminal 2 (Topology)
+#### Step 3: Run Topology
 
 ```bash
 sudo python3 topology.py
 ```
 
-#### Mininet CLI
+#### Step 4: Test Network
+
+Inside Mininet:
 
 ```bash
 pingall
 ```
 
-#### Terminal 3 (Path Tracer)
+#### Step 5: Run Path Tracer
 
 ```bash
 sudo python3 path_tracer.py 10.0.0.1 10.0.0.2
@@ -182,19 +203,25 @@ sudo python3 path_tracer.py 10.0.0.1 10.0.0.2
 
 ### 🔹 Scenario 2: Firewall (Blocking H3)
 
-#### Terminal 1
+#### Step 1: Cleanup
+
+```bash
+sudo mn -c
+```
+
+#### Step 2: Run Firewall Controller
 
 ```bash
 ryu-manager firewall.py
 ```
 
-#### Terminal 2
+#### Step 3: Run Topology
 
 ```bash
 sudo python3 topology.py
 ```
 
-#### Mininet CLI
+#### Step 4: Test
 
 ```bash
 h1 ping h3   # Expected: FAIL
@@ -205,14 +232,14 @@ h1 ping h2   # Expected: SUCCESS
 
 ## 📊 Expected Output
 
-### ✅ Path Tracing Output
+### Path Tracing Output
 
 ```
 Packet Path:
 10.0.0.1 → s1 → s2 → 10.0.0.2
 ```
 
-### ✅ Firewall Output
+### Firewall Output
 
 ```
 Ping to H3: FAILED
@@ -223,9 +250,9 @@ Ping to H2: SUCCESS
 
 ## 📈 Performance Validation
 
-* **Ping Test** → Measures latency
-* **Iperf Test** → Measures throughput
-* **Flow Table Inspection** → Using:
+* Latency using `ping`
+* Throughput using `iperf`
+* Flow rules using:
 
 ```bash
 ovs-ofctl dump-flows s1
@@ -235,36 +262,36 @@ ovs-ofctl dump-flows s1
 
 ## 🔍 How It Works (Simple Explanation)
 
-* The **controller acts like a brain**
-* Switches ask controller what to do
-* Controller installs rules
-* Path tracer reads those rules
-* Displays how packets travel
+* Controller acts as the brain
+* Switches forward packets based on rules
+* Controller installs rules dynamically
+* Path tracer reads flow rules
+* Displays route taken by packets
 
-👉 Similar to **Google Maps tracking route of a car**
+👉 Similar to Google Maps tracking a route
 
 ---
 
 ## 📁 Project Structure
 
 ```
-├── topology.py        # Network topology
-├── controller.py      # Ryu controller logic
-├── firewall.py        # Firewall implementation
-├── path_tracer.py     # Path tracing logic
+├── topology.py
+├── controller.py
+├── firewall.py
+├── path_tracer.py
 ├── README.md
 ```
 
 ---
 
-## 🎓 Viva Preparation (Important Questions)
+## 🎓 Viva Questions
 
 * What is SDN?
 * What is packet_in?
-* How are flow rules installed?
+* What is a flow rule?
 * Difference between match and action?
 * What happens without controller?
-* How does your path tracing work?
+* How does path tracing work?
 
 ---
 
@@ -281,9 +308,9 @@ This project demonstrates how SDN enables:
 
 * Centralized control
 * Dynamic routing
-* Better network visibility
+* Enhanced network visibility
 
-The Path Tracing Tool enhances understanding of **internal network behavior** and provides a practical implementation of SDN concepts.
+The Path Tracing Tool helps in understanding **how packets actually move inside a network**, making it a powerful learning and debugging tool.
 
 ---
 
